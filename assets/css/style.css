@@ -1,6 +1,9 @@
 body {
  background-color:"#00008a";
 }
+.container {
+ position:fixed;
+}
 
 a {
 color:"#000";
