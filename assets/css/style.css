@@ -1,12 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
+
 body {
- background-color:"#00008a";
+ font-family: 'Yusei Magic', sans-serif;
+ margin: 0;
 }
+
+h2
+
 
 a {
-color:"#000";
+  display: block;
+  padding: 8px;
+  background-color: #dddddd;
+	
 }
 
-h3 {
-font-size:"50px";
-align:"center";
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #1e33f7;
+
+}
+
+li {
+  text-align: center;
+  border-bottom: 1px solid #555;
+  float: left;
+
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover {
+  background-color: #555;
+  color: white;
+}
+
+
+.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+
+li:last-child {
+  border-bottom: none;
+}
+
+.container{
+	
+	
+}
+
+.nav{
+	
+	
+	
+}
+
+
+ul.topnav {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+}
+
+ul.topnav li {float: left;}
+
+ul.topnav li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+ul.topnav li a:hover:not(.active) {background-color: #111;}
+
+ul.topnav li a.active {background-color: #4CAF50;}
+
+ul.topnav li.right {float: right;}
+
+@media screen and (max-width: 600px) {
+  ul.topnav li.right, 
+  ul.topnav li {float: none;}
 }
