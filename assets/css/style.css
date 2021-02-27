@@ -1,98 +1,67 @@
-@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
-
-body {
- font-family: 'Yusei Magic', sans-serif;
- margin: 0;
+footer {
+  padding: 1.2rem 1rem;
+  color: rgb(255, 255, 255);
 }
 
-h2
-
-
-a {
-  display: block;
-  padding: 8px;
-  background-color: #dddddd;
-	
+.circle {
+  background-color: white;
+  border-radius: 50%;
+  border: 1px solid rgb(2, 89, 250);
+  padding: 7px;
+  width: 40px;
+  height: 40px;
 }
 
+.page-bas {
+  padding: 3.2rem 1rem;
+  background-image: url(../img/bg-titik.jpg);
+}
 
-ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
+.secto {
+  padding: 3.3rem 1rem;
+  background-color: rgb(255, 255, 255);
+  margin-top: 1em;
+}
+
+.sec-contact {
+  padding: 3.3rem 1rem;
+  background-color: #0099ff;
+}
+
+.animasi-teks {
+  font-size: 29px;
+  width: 100%;
+  padding-bottom: 5px;
+  white-space: nowrap;
   overflow: hidden;
-  background-color: #1e33f7;
-
+  -webkit-animation: typing 10s steps(70, end);
+  animation: animasi-ketik 10s steps(70, end);
 }
 
-li {
-  text-align: center;
-  border-bottom: 1px solid #555;
-  float: left;
-
-}
-
-li a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-}
-
-li a:hover {
-  background-color: #555;
-  color: white;
-}
-
-
-.active {
-  background-color: #4CAF50;
-  color: white;
-}
-
-
-li:last-child {
-  border-bottom: none;
-}
-
-.container{
-	
-	
-}
-
-.nav{
-	
-	
-	
-}
-
-
-ul.topnav {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
+.animasi-teks-del {
+  font-size: 29px;
+  width: 100%;
+  padding-bottom: 5px;
+  white-space: nowrap;
   overflow: hidden;
-  background-color: #333;
+  -webkit-animation: unset;
+  animation: unset;
 }
 
-ul.topnav li {float: left;}
-
-ul.topnav li a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
+@media only screen and (max-width: 600px) {
+  .sec-title h2 .sec-title-border span {
+    top: -20px;
+  }
 }
 
-ul.topnav li a:hover:not(.active) {background-color: #111;}
+@keyframes animasi-ketik {
+  from {
+    width: 0;
+  }
+}
 
-ul.topnav li a.active {background-color: #4CAF50;}
-
-ul.topnav li.right {float: right;}
-
-@media screen and (max-width: 600px) {
-  ul.topnav li.right, 
-  ul.topnav li {float: none;}
+@-webkit-keyframes animasi-ketik {
+  from {
+    width: 100%;
+  }
 }
