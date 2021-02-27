@@ -1,0 +1,112 @@
+@import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,900";
+
+.sec-title {
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto 40px;
+}
+.sec-title h2 {
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  top: -6px;
+}
+.sec-title h2 .sec-title-border {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border-top: 2px solid #ff0000;
+  right: 0;
+  height: 0;
+  margin: auto;
+}
+.pricing-area .sec-title h2 .sec-title-border,
+.hero-area .sec-title h2 .sec-title-border,
+.feature-area .sec-title h2 .sec-title-border,
+.download-area .sec-title h2 .sec-title-border {
+  border-color: #ff0000;
+}
+.pricing-area .sec-title h2 .sec-title-border span::before,
+.hero-area .sec-title h2 .sec-title-border span::before,
+.feature-area .sec-title h2 .sec-title-border span::before,
+.download-area .sec-title h2 .sec-title-border span::before {
+  background-color: #ff0000;
+}
+.sec-title h2 .sec-title-border span {
+  width: 9px;
+  height: 9px;
+  position: relative;
+  display: inline-block;
+  margin: 0 1px;
+  bottom: 28px;
+}
+.sec-title h2 .sec-title-border span::before {
+  background: #ff0000;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  transform: rotate(45deg);
+}
+.mt-100 {
+  margin-top: 100px;
+}
+.mt-30 {
+  margin-top: 30px;
+}
+.ptb-100 {
+  padding: 100px 0;
+}
+.ptb-90 {
+  padding: 90px 0;
+}
+.owl-nav div {
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  width: 35px;
+  background: #fff;
+  color: #000;
+  height: 35px;
+  line-height: 36px;
+  border-radius: 100%;
+  text-align: center;
+  font-size: 29px;
+  transition: 0.4s;
+  margin-top: -60px;
+}
+.owl-nav div:hover {
+  background: #000;
+  color: #fff;
+}
+.owl-nav div.owl-next {
+  right: 20px;
+  left: auto;
+}
+.owl-dots {
+  text-align: center;
+  margin-top: 30px;
+}
+.owl-dot {
+  width: 10px;
+  height: 10px;
+  border: 1px solid #0074da;
+  border-radius: 10px;
+  display: inline-block;
+  margin: 0 3px;
+}
+.owl-dot.active {
+  background: #0074da;
+}
+.display-table {
+  display: table;
+  height: 100%;
+  width: 100%;
+}
+.display-tablecell {
+  display: table-cell;
+  vertical-align: middle;
+}
