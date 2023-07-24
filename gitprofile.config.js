@@ -81,18 +81,18 @@ const config = {
   // To hide the `My Projects` section, keep it empty.
   externalProjects: [
     {
-      title: 'Project Name',
+      title: 'SisEntra',
       description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc ut.',
-      imageUrl: 'https://via.placeholder.com/250x250',
-      link: 'https://example.com',
+        'Sentra UTama Organization membership management website. Contains meeting attendance, project lists, cash management as well as cash payments, membership lists, and more. using PHP Native',
+      imageUrl: 'https://i.ibb.co/qB7cJQ4/S.png',
+      link: 'https://sentrawidyatama.my.id',
     },
     {
-      title: 'Project Name',
+      title: 'Bot WhatsApp (BlastJET)',
       description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc ut.',
-      imageUrl: 'https://via.placeholder.com/250x250',
-      link: 'https://example.com',
+        'BlastJET is a web application with a mass messaging system that allows users to send messages in the form of Text, Media, Button. In addition, there is a useful bot feature to automatically reply to messages.',
+      imageUrl: 'https://panel.blastjet.biz.id/uploads/avatar/edcc4adf531cc758a046e6c16d219aae.png?v=3.3.3',
+      link: 'https://blastjet.biz.id',
     },
   ],
   // Display blog posts from your medium or dev account. (Optional)
