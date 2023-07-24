@@ -2,8 +2,8 @@
 
 const config = {
   github: {
-    username: 'arifszn', // Your GitHub org/user name. (Required)
-    sortBy: 'stars', // stars | updated
+    username: 'triyatna', // Your GitHub org/user name. (Required)
+    sortBy: 'updated', // stars | updated
     limit: 10, // How many projects to display.
     exclude: {
       forks: false, // Forked projects will not be displayed if set to true.
@@ -11,21 +11,21 @@ const config = {
     },
   },
   social: {
-    linkedin: 'ariful-alam',
-    twitter: 'arif_szn',
-    mastodon: 'arifszn@mastodon.social',
-    facebook: '',
-    instagram: '',
+    linkedin: 'triyatna',
+    twitter: 'triyatna145',
+    mastodon: '',
+    facebook: '3yatna',
+    instagram: 'triyatna_lesmana',
     dribbble: '',
     behance: '',
-    medium: 'arifszn',
-    dev: 'arifszn',
-    stackoverflow: '', // format: userid/username
+    medium: '',
+    dev: '',
+    stackoverflow: '21925119/tri-yatna', // format: userid/username
     skype: '',
-    telegram: '',
-    website: 'https://arifszn.com',
+    telegram: 'triyatna_lesmana',
+    website: 'https://triyatna.com',
     phone: '',
-    email: 'arifulalamszn@gmail.com',
+    email: 'triyatna.com@gmail.com',
   },
   resume: {
     fileUrl:
@@ -33,22 +33,20 @@ const config = {
   },
   skills: [
     'PHP',
+    'Codeigniter',
     'Laravel',
     'JavaScript',
-    'React.js',
     'Node.js',
-    'Nest.js',
+    'Express',
     'MySQL',
     'PostgreSQL',
+    'MongoDB',
     'Git',
-    'Docker',
-    'PHPUnit',
     'CSS',
-    'Antd',
-    'Tailwind',
+    'HTML',
   ],
-  experiences: [
-    {
+ /*  experiences: [
+     {
       company: 'Company Name',
       position: 'Position',
       from: 'September 2021',
@@ -62,7 +60,7 @@ const config = {
       to: 'August 2021',
       companyLink: 'https://example.com',
     },
-  ],
+  ], */
   /* certifications: [
     {
       name: 'Lorem ipsum',
@@ -73,16 +71,10 @@ const config = {
   ], */
   education: [
     {
-      institution: 'Institution Name',
-      degree: 'Degree',
-      from: '2015',
-      to: '2019',
-    },
-    {
-      institution: 'Institution Name',
-      degree: 'Degree',
-      from: '2012',
-      to: '2014',
+      institution: 'Widyatama University',
+      degree: 'S.M.',
+      from: '2020',
+      to: '2024',
     },
   ],
 
@@ -104,11 +96,11 @@ const config = {
     },
   ],
   // Display blog posts from your medium or dev account. (Optional)
-  blog: {
-    source: 'dev', // medium | dev
-    username: 'arifszn', // to hide blog section, keep it empty
-    limit: 2, // How many posts to display. Max is 10.
-  },
+  // blog: {
+  //   source: 'dev', // medium | dev
+  //   username: 'arifszn', // to hide blog section, keep it empty
+  //   limit: 2, // How many posts to display. Max is 10.
+  // },
   googleAnalytics: {
     id: '', // GA3 tracking id/GA4 tag id UA-XXXXXXXXX-X | G-XXXXXXXXXX
   },
