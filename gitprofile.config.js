@@ -73,7 +73,7 @@ const config = {
   education: [
     {
       institution: 'Widyatama University',
-      degree: 'S.M.',
+      degree: 'Bachelor (Management)',
       from: '2020',
       to: '2024',
     },
