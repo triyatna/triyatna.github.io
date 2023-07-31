@@ -95,6 +95,13 @@ const config = {
       imageUrl: 'https://panel.blastjet.biz.id/uploads/avatar/edcc4adf531cc758a046e6c16d219aae.png?v=3.3.3',
       link: 'https://blastjet.biz.id',
     },
+     {
+      title: 'News Portal sEntra (PKM sEntra UTAMA)',
+      description:
+        'Center student press organization news sEntra Widyatama University, developed with WordPress CMS',
+      imageUrl: 'https://pkmsentra.com/wp-content/uploads/2023/02/Logo1.png',
+      link: 'https://pkmsentra.com',
+    },
   ],
   // Display blog posts from your medium or dev account. (Optional)
   // blog: {
