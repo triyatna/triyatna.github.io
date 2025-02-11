@@ -14,7 +14,7 @@ const config = {
     linkedin: 'triyatna',
     twitter: 'triyatna145',
     mastodon: '',
-    facebook: '3yatna',
+    facebook: '',
     instagram: 'triyatna_lesmana',
     dribbble: '',
     behance: '',
