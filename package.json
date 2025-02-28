@@ -1,9 +1,9 @@
 {
-  "name": "@arifszn/gitprofile",
-  "description": "Create an automatic portfolio based on GitHub profile",
-  "version": "2.5.0",
+  "name": "@triyatna/profilecard",
+  "description": "Portfolio card based on Github",
+  "version": "1.0.0",
   "license": "MIT",
-  "author": "arifszn",
+  "author": "triyatna",
   "repository": {
     "type": "git",
     "url": "https://github.com/arifszn/gitprofile.git"
