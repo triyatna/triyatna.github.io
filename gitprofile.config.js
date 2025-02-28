@@ -37,6 +37,10 @@ const config = {
     'Laravel',
     'JavaScript',
     'Node.js',
+    'React',
+    'Vue',
+    'Tailwind CSS',
+    'Bootstrap',
     'Express',
     'MySQL',
     'PostgreSQL',
@@ -46,7 +50,7 @@ const config = {
     'HTML',
     'Wordpress',
   ],
- /*  experiences: [
+  /*  experiences: [
      {
       company: 'Company Name',
       position: 'Position',
@@ -77,10 +81,23 @@ const config = {
       from: '2020',
       to: '2024',
     },
+    {
+      institution: 'Lemahabang State High School',
+      degree: 'Social Studies',
+      from: '2017',
+      to: '2020',
+    },
   ],
 
   // To hide the `My Projects` section, keep it empty.
   externalProjects: [
+    {
+      title: 'MyPortfolio',
+      description:
+        'A personal portfolio website that showcases my work and projects. Built with Laravel 11',
+      imageUrl: 'https://tri-yatna.my.id/build/images/logo-icon.svg',
+      link: 'https://tri-yatna.my.id',
+    },
     {
       title: 'SisEntra',
       description:
@@ -92,10 +109,11 @@ const config = {
       title: 'Bot WhatsApp (BlastJET)',
       description:
         'BlastJET is a web application with a mass messaging system that allows users to send messages in the form of Text, Media, Button. In addition, there is a useful bot feature to automatically reply to messages.',
-      imageUrl: 'https://panel.blastjet.biz.id/uploads/avatar/edcc4adf531cc758a046e6c16d219aae.png?v=3.3.3',
+      imageUrl:
+        'https://panel.blastjet.biz.id/uploads/avatar/edcc4adf531cc758a046e6c16d219aae.png?v=3.3.3',
       link: 'https://blastjet.biz.id',
     },
-     {
+    {
       title: 'News Portal sEntra (PKM sEntra UTAMA)',
       description:
         'Center student press organization news sEntra Widyatama University, developed with WordPress CMS',
