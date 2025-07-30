@@ -20,7 +20,9 @@
     "lint:fix": "eslint . --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "prettier": "prettier --check \"./**/*.{js,jsx,ts,tsx,css,md,json}\"",
     "prettier:fix": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,md,json}\"",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build -r https://github.com/triyatna/triyatna.github.io.git -b main --dest portfolio"
   },
   "dependencies": {
     "react": "^19.1.0",
