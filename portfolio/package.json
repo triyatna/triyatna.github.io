@@ -12,6 +12,7 @@
   "bugs": {
     "url": "https://github.com/arifszn/gitprofile/issues"
   },
+  "homepage": "https://triyatna.is-a.dev/portfolio",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
