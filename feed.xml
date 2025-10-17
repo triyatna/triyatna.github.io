@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Tri Yatna — Web Developer Portfolio</title>
+    <link>https://triyatna.is-a.dev/</link>
+    <description>Fast, modern, programmer-themed portfolio by Tri Yatna.</description>
+    <language>en_US</language>
+    <lastBuildDate>Fri, 17 Oct 2025 11:51:48 GMT</lastBuildDate>
+    <image>
+      <url>https://triyatna.is-a.dev/assets/images/og-image.png</url>
+      <title>Tri Yatna — Web Developer Portfolio</title>
+      <link>https://triyatna.is-a.dev/</link>
+    </image>
+
+  </channel>
+</rss>
