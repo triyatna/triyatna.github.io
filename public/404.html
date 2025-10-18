@@ -359,21 +359,74 @@
 
     <script>
       (function () {
-        const el = document.getElementById("path");
-        const here = location.pathname + location.search + location.hash;
-        if (el) el.textContent = "Request: " + here;
+        const $ = (sel) => document.querySelector(sel);
 
-        function computeBase() {
+        const here = location.pathname + location.search + location.hash;
+        const pathEl = document.getElementById("path");
+        if (pathEl) pathEl.textContent = "Request: " + here;
+
+        function normPath(p) {
           try {
-            const { pathname } = location;
-            const seg = pathname.split("/").filter(Boolean);
-            if (pathname.match(/\.html?$/)) return "/";
-            if (seg.length > 0) return "/" + seg[0] + "/";
-            return "/";
-          } catch (e) {
-            console.warn("Failed to compute base path:", e);
+            let s = String(p || "/");
+            if (!s.startsWith("/")) s = "/" + s;
+            if (!s.endsWith("/")) s += "/";
+            return s;
+          } catch {
             return "/";
           }
+        }
+
+        function fromCanonical() {
+          try {
+            const el = $('link[rel="canonical"]');
+            if (!el || !el.href) return null;
+            const u = new URL(el.href, location.origin);
+            return u.pathname || "/";
+          } catch {
+            return null;
+          }
+        }
+
+        function fromBaseTag() {
+          try {
+            const el = $("base[href]");
+            if (!el) return null;
+            const u = new URL(el.getAttribute("href"), location.origin);
+            return u.pathname || "/";
+          } catch {
+            return null;
+          }
+        }
+
+        function fromGlobalVar() {
+          try {
+            const v = window.__BASE_PATH__;
+            return v ? String(v) : null;
+          } catch {
+            return null;
+          }
+        }
+
+        function ghHeuristic() {
+          try {
+            const host = location.hostname;
+            const seg = location.pathname.split("/").filter(Boolean);
+            const isGH = /\.github\.io$/i.test(host);
+            if (!isGH) return "/";
+            return seg.length ? "/" + seg[0] + "/" : "/";
+          } catch {
+            return "/";
+          }
+        }
+
+        function computeBase() {
+          const c = fromCanonical();
+          if (c) return normPath(c);
+          const b = fromBaseTag();
+          if (b) return normPath(b);
+          const g = fromGlobalVar();
+          if (g) return normPath(g);
+          return normPath(ghHeuristic());
         }
 
         const BASE = computeBase();
@@ -382,7 +435,8 @@
         if (homeBtn) {
           homeBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            location.href = BASE;
+            const target = new URL(BASE, location.origin).toString();
+            location.href = target;
           });
         }
 
@@ -404,9 +458,7 @@
         try {
           const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
           document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-        } catch (err) {
-          console.warn("Theme detection failed:", err);
-        }
+        } catch {}
       })();
     </script>
   </body>
