@@ -111,10 +111,10 @@
       }
       h1 {
         margin: 0 0 0.5rem;
-        padding-bottom: 0.2rem;
+        padding-bottom: 0.3em;
         font-weight: 900;
         letter-spacing: 0.5px;
-        line-height: 1.14;
+        line-height: 1.2;
         font-size: clamp(42px, 6vw, 74px);
         background: linear-gradient(
           90deg,
@@ -123,6 +123,8 @@
         );
         -webkit-background-clip: text;
         background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-origin: text;
         color: transparent;
         filter: drop-shadow(0 0 18px color-mix(in oklch, var(--accent) 25%, transparent));
         -webkit-text-stroke: 0.3px rgba(0, 0, 0, 0);
@@ -141,6 +143,7 @@
         gap: 14px;
         grid-template-columns: 1fr;
         margin-top: 18px;
+        margin-bottom: 12px;
       }
       @media (min-width: 560px) {
         .grid {

@@ -27,8 +27,10 @@ type Repo = {
   topics?: string[];
 };
 
-export const Projects: React.FC<{ config: Config }> = ({ config }) => {
-  const gh = config.github;
+export const Projects: React.FC<{ config?: Config }> = ({ config }) => {
+  const cfg: Config = useMemo(() => config ?? {}, [config]);
+  const gh = cfg.github;
+
   const [repos, setRepos] = useState<Repo[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,16 +55,16 @@ export const Projects: React.FC<{ config: Config }> = ({ config }) => {
         );
 
         if (!res.ok) {
-          if (res.status === 403) {
-            setError("GitHub rate limit reached. Try again later.");
-            return;
-          }
-          setError(`GitHub error: ${res.status}`);
+          setError(
+            res.status === 403
+              ? "GitHub rate limit reached. Try again later."
+              : `GitHub error: ${res.status}`
+          );
           return;
         }
 
-        const json = (await res.json()) as unknown;
-        let items: Repo[] = Array.isArray(json) ? (json as Repo[]) : [];
+        let items = (await res.json()) as Repo[];
+        if (!Array.isArray(items)) items = [];
 
         if (gh.filter?.excludeForks) items = items.filter((r) => !r.fork);
 
@@ -78,7 +80,7 @@ export const Projects: React.FC<{ config: Config }> = ({ config }) => {
 
         items.sort(
           (a, b) =>
-            b.stargazers_count - a.stargazers_count ||
+            (b.stargazers_count || 0) - (a.stargazers_count || 0) ||
             new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
         );
 
@@ -100,7 +102,6 @@ export const Projects: React.FC<{ config: Config }> = ({ config }) => {
     if (!repos) return null;
 
     const query = dq.trim().toLowerCase();
-
     let items = repos.filter((r) => {
       if (!query) return true;
       const hay =
@@ -191,9 +192,7 @@ export const Projects: React.FC<{ config: Config }> = ({ config }) => {
                   type="button"
                   aria-pressed={view === "grid"}
                   onClick={() => setView("grid")}
-                  className={`h-9 w-9 rounded-lg focus-ring transition cursor-pointer  ${
-                    view === "grid" ? "bg-[color:var(--bg)]/70" : "hover:bg-[color:var(--bg)]/90"
-                  }`}
+                  className={`h-9 w-9 rounded-lg focus-ring transition cursor-pointer  ${view === "grid" ? "bg-[color:var(--bg)]/70" : "hover:bg-[color:var(--bg)]/90"}`}
                   title="Grid view"
                 >
                   <svg
@@ -209,9 +208,7 @@ export const Projects: React.FC<{ config: Config }> = ({ config }) => {
                   type="button"
                   aria-pressed={view === "list"}
                   onClick={() => setView("list")}
-                  className={`h-9 w-9 rounded-lg focus-ring transition cursor-pointer ${
-                    view === "list" ? "bg-[color:var(--bg)]/70" : "hover:bg-[color:var(--bg)]/90"
-                  }`}
+                  className={`h-9 w-9 rounded-lg focus-ring transition cursor-pointer ${view === "list" ? "bg-[color:var(--bg)]/70" : "hover:bg-[color:var(--bg)]/90"}`}
                   title="List view"
                 >
                   <svg
@@ -305,11 +302,11 @@ export const Projects: React.FC<{ config: Config }> = ({ config }) => {
         </div>
       )}
 
-      {config.custom && config.custom.length > 0 && (
+      {Array.isArray(cfg.custom) && cfg.custom.length > 0 && (
         <div>
           <h2 className="text-2xl font-semibold">My Projects</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {config.custom.map((p, i) => (
+            {cfg.custom.map((p, i) => (
               <a
                 key={i}
                 href={p.link || "#"}

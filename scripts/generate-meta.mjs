@@ -1,25 +1,20 @@
-// scripts/generate-meta.mjs
 import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "node:path";
 
-/* ---------- helpers ---------- */
-const readJSON = (p) => JSON.parse(fs.readFileSync(p, "utf-8"));
+/* ========== Helpers ========== */
 const exists = (p) => fs.existsSync(p);
-const outDir = "dist";
+const readFile = (p) => fs.readFileSync(p, "utf8");
+const writeFile = (p, s) => fs.writeFileSync(p, s);
+const ensureDir = (d) => fs.mkdirSync(d, { recursive: true });
 
-const findDataJson = () => {
-  const candidates = [
-    "src/data/data.json",
-    "public/data/data.json",
-    "data/data.json",
-    "dist/data/data.json",
-  ];
-  for (const p of candidates) if (exists(p)) return p;
-  throw new Error("data.json not found in src/public/data/");
+const stripBOM = (s) => s.replace(/^\uFEFF/, "");
+const tryJSON = (s) => {
+  const t = stripBOM(s).trim();
+  if (/^\s*</.test(t)) throw new Error("Not JSON (HTML-like)");
+  return JSON.parse(t);
 };
 
-// xml escape
 const x = (s = "") =>
   String(s)
     .replaceAll("&", "&amp;")
@@ -35,8 +30,15 @@ const htmlAttr = (o) =>
     .join(" ");
 
 const tag = (name, attrs = {}, selfClose = true) =>
-  `<${name} ${htmlAttr(attrs)}${selfClose ? " />" : ">"}`;
+  `<${name}${Object.keys(attrs).length ? " " + htmlAttr(attrs) : ""}${selfClose ? " />" : ">"}`;
 
+const originOf = (u = "") => {
+  try {
+    return u ? new URL(u).origin : "";
+  } catch {
+    return "";
+  }
+};
 const absUrl = (base, p) => {
   if (!p) return base;
   try {
@@ -46,28 +48,50 @@ const absUrl = (base, p) => {
   }
 };
 
-const originOf = (u = "") => {
-  try {
-    return u ? new URL(u).origin : "";
-  } catch {
-    return "";
-  }
+const inferMime = (f = "") => {
+  const l = f.toLowerCase();
+  if (l.endsWith(".svg")) return "image/svg+xml";
+  if (l.endsWith(".png")) return "image/png";
+  if (l.endsWith(".jpg") || l.endsWith(".jpeg")) return "image/jpeg";
+  if (l.endsWith(".ico")) return "image/x-icon";
+  return "";
 };
 
-const ensureDir = (d) => fs.mkdirSync(d, { recursive: true });
+/* ========== Load data.json ========== */
+const findDataJson = () => {
+  const candidates = [
+    "public/data/data.json",
+    "src/data/data.json",
+    "data/data.json",
+    "dist/data/data.json",
+  ];
+  for (const p of candidates) if (exists(p)) return p;
+  throw new Error("data.json not found (public/src/dist).");
+};
 
-/* ---------- load data ---------- */
 const dataPath = path.resolve(findDataJson());
-const data = readJSON(dataPath);
+const data = tryJSON(readFile(dataPath));
+const seo = data?.seo || {};
+const outDir = "dist";
 ensureDir(outDir);
 
-/* ---------- resolve base/canonical ---------- */
-const seo = data?.seo || {};
-const siteUrl = String(seo.siteUrl || "").replace(/\/$/, "");
-const basePath = seo.basePath || process.env.BASE_PATH || process.env.VITE_BASE || "/";
-const canonicalBase = siteUrl ? new URL(basePath, siteUrl).toString() : basePath || "/";
+/* ========== Resolve base / canonical ========== */
+const envBase = process.env.BASE_PATH || process.env.VITE_BASE || "/";
+const fromSeoBase = seo.basePath || "/";
+const basePathRaw = envBase || fromSeoBase || "/";
 
-/* ---------- feed + sitemap + robots ---------- */
+const normalizeBase = (b) => {
+  let s = String(b || "/").trim();
+  if (!s.startsWith("/")) s = "/" + s;
+  if (!s.endsWith("/")) s = s + "/";
+  return s;
+};
+const basePath = normalizeBase(basePathRaw);
+
+const siteUrl = String(seo.siteUrl || "").replace(/\/$/, "");
+const canonicalBase = siteUrl ? new URL(basePath, siteUrl).toString() : basePath;
+
+/* ========== FEED + SITEMAP + ROBOTS ========== */
 {
   const urls = [
     {
@@ -91,14 +115,14 @@ ${urls
   )
   .join("\n")}
 </urlset>`;
-  fs.writeFileSync(path.join(outDir, "sitemap.xml"), sitemap);
+  writeFile(path.join(outDir, "sitemap.xml"), sitemap);
 
   const blog = data?.blog || {};
   const siteTitle = seo.title || data?.personal?.name || "Portfolio";
   const siteDesc = seo.description || data?.personal?.tagline || "A fast, modern, tech portfolio.";
   const ogImage = seo.image
     ? absUrl(canonicalBase, seo.image)
-    : absUrl(canonicalBase, "/og-image.png");
+    : absUrl(canonicalBase, "/assets/images/og-image.png");
 
   const rawPosts = Array.isArray(blog.posts)
     ? blog.posts
@@ -124,13 +148,15 @@ ${urls
     })
     .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
 
+  const rssLang = (seo.locale || "en_US").split("_")[0];
+
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
     <title>${x(siteTitle)}</title>
     <link>${x(canonicalBase)}</link>
     <description>${x(siteDesc)}</description>
-    <language>${x(seo.locale || "en")}</language>
+    <language>${x(rssLang)}</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <image>
       <url>${x(ogImage)}</url>
@@ -154,24 +180,24 @@ ${items
   .join("\n")}
   </channel>
 </rss>`;
-  fs.writeFileSync(path.join(outDir, "feed.xml"), rss);
+  writeFile(path.join(outDir, "feed.xml"), rss);
 
   const robots = `User-agent: *
 Allow: /
 
 Sitemap: ${absUrl(canonicalBase, "/sitemap.xml")}
 `;
-  fs.writeFileSync(path.join(outDir, "robots.txt"), robots);
+  writeFile(path.join(outDir, "robots.txt"), robots);
 
   console.log("✓ sitemap.xml, feed.xml, robots.txt");
   if (!siteUrl) {
     console.warn(
-      "⚠️  seo.siteUrl kosong. Sebaiknya isi URL absolut domain produksi agar canonical/RSS/robots akurat."
+      "⚠️  seo.siteUrl kosong. Isi URL absolut domain produksi agar canonical/RSS/robots akurat."
     );
   }
 }
 
-/* ---------- build HEAD injection (SEO) ---------- */
+/* ========== HEAD SEO Injection ========== */
 const p = data?.personal || {};
 const title = seo.title || p.name || "Portfolio";
 const desc = seo.description || p.tagline || "A fast, modern, programmer-themed portfolio.";
@@ -183,16 +209,16 @@ const keywords = (seo.keywords || []).join(", ");
 let twitter = (seo.twitter || "").trim();
 if (twitter && !twitter.startsWith("@")) twitter = `@${twitter}`;
 const twitterId = (seo.twitterId || "").trim();
-const imageAbs = absUrl(canonicalBase, seo.image || "./assets/images/og-image.png");
+const imageAbs = absUrl(canonicalBase, seo.image || "/assets/images/og-image.png");
 const imageW = seo.imageWidth ?? 1200;
 const imageH = seo.imageHeight ?? 630;
 
 const FALL = {
-  svg: "./assets/images/favicon.svg",
-  ico: "./assets/images/favicon.ico",
-  png96: "./assets/images/favicon-96x96.png",
-  apple180: "./assets/images/apple-touch-icon.png",
-  mask: "./assets/images/safari-pinned-tab.svg",
+  svg: "/assets/images/favicon.svg",
+  ico: "/assets/images/favicon.ico",
+  png96: "/assets/images/favicon-96x96.png",
+  apple180: "/assets/images/apple-touch-icon.png",
+  mask: "/assets/images/safari-pinned-tab.svg",
 };
 const fav = seo.favicons || {};
 const iconSvg = fav.icon || FALL.svg;
@@ -202,15 +228,6 @@ const apple180 = fav.apple || FALL.apple180;
 const maskHref = fav.maskIconHref || FALL.mask;
 const maskColor = fav.maskIconColor || "#0D1117";
 
-const inferMime = (f = "") => {
-  const l = f.toLowerCase();
-  if (l.endsWith(".svg")) return "image/svg+xml";
-  if (l.endsWith(".png")) return "image/png";
-  if (l.endsWith(".jpg") || l.endsWith(".jpeg")) return "image/jpeg";
-  if (l.endsWith(".ico")) return "image/x-icon";
-  return "";
-};
-
 const canonical = canonicalBase;
 const sitemapHref = absUrl(canonicalBase, "/sitemap.xml");
 const rssUrl = seo.rss || data?.blog?.rssJson || "/feed.xml";
@@ -218,14 +235,13 @@ const rssUrl = seo.rss || data?.blog?.rssJson || "/feed.xml";
 const preconnectHosts = new Set([
   ...(seo.preconnect || []).map(String),
   originOf(p?.avatarUrl || ""),
-  canonicalBase,
+  originOf(canonicalBase) || canonicalBase,
 ]);
 
 const alternates = seo.alternates || {};
 const localeAlternates = seo.localeAlternates || [];
-
-/* JSON-LD blocks */
 const sameAs = Object.values(p?.socials || {}).filter(Boolean);
+
 const personLD = {
   "@context": "https://schema.org",
   "@type": "Person",
@@ -285,13 +301,11 @@ const orgLD = seo.organization?.name
     }
   : null;
 
-/* head fragment (replaceable) */
 const HEAD_BEGIN = "<!-- seo:begin -->";
 const HEAD_END = "<!-- seo:end -->";
 
 const headFrag = [
   HEAD_BEGIN,
-  // basic
   tag("meta", { name: "description", content: desc }),
   keywords ? tag("meta", { name: "keywords", content: keywords }) : "",
   tag("meta", {
@@ -309,7 +323,6 @@ const headFrag = [
   seo.notranslate ? tag("meta", { name: "google", content: "notranslate" }) : "",
   tag("link", { rel: "canonical", href: canonical }),
   tag("link", { rel: "sitemap", href: sitemapHref }),
-  // theme colors
   tag("meta", { name: "theme-color", content: seo.themeColorDark || "#0D1117" }),
   seo.themeColorLight
     ? tag("meta", {
@@ -325,7 +338,6 @@ const headFrag = [
         media: "(prefers-color-scheme: dark)",
       })
     : "",
-  // favicons & manifest
   tag("link", { rel: "icon", href: iconSvg, type: inferMime(iconSvg) }),
   tag("link", { rel: "icon", href: iconPng96, type: "image/png", sizes: "96x96" }),
   tag("link", { rel: "shortcut icon", href: iconIco }),
@@ -333,7 +345,6 @@ const headFrag = [
   tag("meta", { name: "apple-mobile-web-app-title", content: appName }),
   seo.manifest ? tag("link", { rel: "manifest", href: seo.manifest }) : "",
   tag("link", { rel: "mask-icon", href: maskHref, color: maskColor }),
-  // OG
   tag("meta", { property: "og:type", content: "website" }),
   tag("meta", { property: "og:site_name", content: siteName }),
   tag("meta", { property: "og:title", content: title }),
@@ -357,7 +368,6 @@ const headFrag = [
   ...(seo.articleTags || []).map((tagName) =>
     tag("meta", { property: "article:tag", content: tagName })
   ),
-  // Twitter
   tag("meta", { name: "twitter:card", content: "summary_large_image" }),
   tag("meta", { name: "twitter:title", content: title }),
   tag("meta", { name: "twitter:description", content: desc }),
@@ -376,7 +386,6 @@ const headFrag = [
       }
     })(),
   }),
-  // RSS
   rssUrl
     ? tag("link", {
         rel: "alternate",
@@ -385,12 +394,10 @@ const headFrag = [
         title: `${p?.name || "Feed"} RSS`,
       })
     : "",
-  // alternates (hreflang)
   ...Object.entries(alternates).map(([lang, href]) =>
     tag("link", { rel: "alternate", href: absUrl(canonicalBase, href), hreflang: lang })
   ),
   tag("link", { rel: "alternate", href: canonical, hreflang: "x-default" }),
-  // preconnect + dns-prefetch
   ...Array.from(preconnectHosts)
     .filter(Boolean)
     .map((h) => {
@@ -400,7 +407,6 @@ const headFrag = [
         tag("link", { rel: "preconnect", href: origin, crossorigin: "" }),
       ].join("\n");
     }),
-  // JSON-LD
   `<script type="application/ld+json" id="ld-person">${JSON.stringify(personLD)}</script>`,
   `<script type="application/ld+json" id="ld-website">${JSON.stringify(websiteLD)}</script>`,
   `<script type="application/ld+json" id="ld-webpage">${JSON.stringify(webpageLD)}</script>`,
@@ -412,19 +418,21 @@ const headFrag = [
   .filter(Boolean)
   .join("\n");
 
-/* ---------- inject into dist html ---------- */
-const targets = ["index.html", "404.html"].map((f) => path.join(outDir, f)).filter(exists);
+/* ========== Inject into built HTMLs ========== */
+const targets = ["index.html", "404.html"]
+  .map((f) => path.join(outDir, f))
+  .filter((p) => exists(p));
 
 for (const file of targets) {
   let html = await fsp.readFile(file, "utf8");
 
-  // set <html lang="..."> if missing
+  // <html lang="">
   html = html.replace(
     /<html(?![^>]*\blang=)/i,
     `<html lang="${(seo.locale || "en_US").split("_")[0] || "en"}"`
   );
 
-  // set <title> to SEO title (optional)
+  // <title>
   if (/<title>.*?<\/title>/i.test(html)) {
     html = html.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
   } else {
@@ -439,7 +447,7 @@ for (const file of targets) {
   }
 
   await fsp.writeFile(file, html, "utf8");
-  console.log(`✓ injected SEO into ${file}`);
+  console.log(`✓ injected SEO into ${path.basename(file)}`);
 }
 
 console.log("✓ SEO injection complete");

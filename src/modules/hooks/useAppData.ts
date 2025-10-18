@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import fallback from "../../data/data.json";
 
-export type SiteData = typeof fallback;
+export type SiteData = Record<string, any>;
 
 export function useAppData() {
   const base = (import.meta.env.BASE_URL || "/").replace(/\/+$/, "");
@@ -9,7 +8,7 @@ export function useAppData() {
 
   const dataUrl = useMemo(() => String(import.meta.env.VITE_DATA_URL || defaultUrl), [defaultUrl]);
 
-  const [data, setData] = useState<SiteData>(fallback);
+  const [data, setData] = useState<SiteData>({} as SiteData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,25 +22,15 @@ export function useAppData() {
 
       const ct = res.headers.get("content-type") || "";
       const rawText = await res.text();
-
       const text = rawText.replace(/^\uFEFF/, "").trim();
 
       if (!/application\/json/i.test(ct) || /^\s*</.test(text)) {
         throw new Error("Not JSON (got HTML)");
       }
 
-      let json: SiteData;
-      try {
-        json = JSON.parse(text) as SiteData;
-      } catch (err: any) {
-        throw new Error(`Invalid JSON: ${err?.message || "Parse error"}`);
-      }
-
-      setData(json);
+      setData(JSON.parse(text) as SiteData);
     } catch (e: any) {
-      if (e?.name !== "AbortError") {
-        setError(e?.message || "Failed to fetch data.json");
-      }
+      if (e?.name !== "AbortError") setError(e?.message || "Failed to fetch data.json");
     } finally {
       setLoading(false);
     }
@@ -53,7 +42,5 @@ export function useAppData() {
     return () => ac.abort();
   }, [dataUrl]);
 
-  const reload = () => load();
-
-  return { data, loading, error, reload, dataUrl };
+  return { data, loading, error, reload: () => load(), dataUrl };
 }
