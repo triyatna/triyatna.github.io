@@ -122,7 +122,9 @@ jobs:
       - name: Ensure static 404
         run: |
           if [[ ! -f dist/404.html ]]; then
-            cat > dist/404.html <<'HTML'<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 — Not Found</title><style>html,body{height:100%;margin:0;background:#0d1117;color:#e6edf3;display:grid;place-items:center;font:16px/1.5 ui-sans-serif,system-ui;-webkit-font-smoothing:antialiased;}</style><body><main><h1>404</h1><p>Page not found.</p></main></body></html>HTML
+            cat > dist/404.html <<'HTML'
+            <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 — Not Found</title><style>html,body{height:100%;margin:0;background:#0d1117;color:#e6edf3;display:grid;place-items:center;font:16px/1.5 ui-sans-serif,system-ui;-webkit-font-smoothing:antialiased;}</style><body><main><h1>404</h1><p>Page not found.</p></main></body></html>
+            HTML
           fi
           if grep -E '<script[^>]+src=.*/assets/js/' dist/404.html >/dev/null 2>&1; then
             echo "dist/404.html must be static (no app bundle)"; exit 1
@@ -131,7 +133,6 @@ jobs:
       - name: Sanity checks
         run: |
           test -f dist/index.html || (echo "dist/index.html missing" && exit 1)
-          # Tidak boleh ada referensi src/main.tsx (tanda belum terbuild)
           if grep -E '/src/main\.(t|j)sx?' dist/index.html >/dev/null 2>&1; then
             echo "index.html references /src/main.* — build failed"; exit 1
           fi
