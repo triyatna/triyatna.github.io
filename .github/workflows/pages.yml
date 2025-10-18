@@ -140,7 +140,6 @@ jobs:
 
       - name: Post-build adjustments
         run: |
-          cp dist/index.html dist/404.html || true
           if [[ -f CNAME ]]; then cp CNAME dist/CNAME; fi
           if [[ -f public/CNAME ]]; then cp public/CNAME dist/CNAME; fi
           if [[ -f public/_headers ]]; then cp public/_headers dist/_headers; fi
