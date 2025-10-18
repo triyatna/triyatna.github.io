@@ -361,41 +361,52 @@
       (function () {
         const el = document.getElementById("path");
         const here = location.pathname + location.search + location.hash;
-        el.textContent = "Request: " + here;
+        if (el) el.textContent = "Request: " + here;
 
         function computeBase() {
           try {
-            const host = location.hostname;
-            const seg = location.pathname.split("/").filter(Boolean);
-            if (host.endsWith(".github.io")) return "/";
-            return seg.length ? "/" + seg[0] + "/" : "/";
-          } catch {
+            const { pathname } = location;
+            const seg = pathname.split("/").filter(Boolean);
+            if (pathname.match(/\.html?$/)) return "/";
+            if (seg.length > 0) return "/" + seg[0] + "/";
+            return "/";
+          } catch (e) {
+            console.warn("Failed to compute base path:", e);
             return "/";
           }
         }
+
         const BASE = computeBase();
 
-        document.getElementById("home").addEventListener("click", function (e) {
-          e.preventDefault();
-          location.href = BASE;
-        });
-        document.getElementById("copy").addEventListener("click", async function (e) {
-          e.preventDefault();
-          try {
-            await navigator.clipboard.writeText(location.href);
-            this.textContent = "Copied!";
-            setTimeout(() => (this.textContent = "Copy path"), 1200);
-          } catch {
-            this.textContent = "Failed";
-            setTimeout(() => (this.textContent = "Copy path"), 1200);
-          }
-        });
+        const homeBtn = document.getElementById("home");
+        if (homeBtn) {
+          homeBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            location.href = BASE;
+          });
+        }
+
+        const copyBtn = document.getElementById("copy");
+        if (copyBtn) {
+          copyBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            try {
+              await navigator.clipboard.writeText(location.href);
+              copyBtn.textContent = "Copied!";
+              setTimeout(() => (copyBtn.textContent = "Copy path"), 1200);
+            } catch {
+              copyBtn.textContent = "Failed";
+              setTimeout(() => (copyBtn.textContent = "Copy path"), 1200);
+            }
+          });
+        }
 
         try {
-          const dark =
-            window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
           document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-        } catch {}
+        } catch (err) {
+          console.warn("Theme detection failed:", err);
+        }
       })();
     </script>
   </body>
