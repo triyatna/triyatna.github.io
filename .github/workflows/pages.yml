@@ -36,7 +36,7 @@ jobs:
           else
             echo "pm=npm" >> "$GITHUB_OUTPUT"
           fi
-          echo "Detected PM: ${PM:-${{ steps.pm.outputs.pm }}}"
+          echo "Using PM=${{ steps.pm.outputs.pm }}"
 
       - name: Setup Node (npm)
         if: steps.pm.outputs.pm == 'npm'
@@ -59,14 +59,17 @@ jobs:
           node-version: 20
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
+
       - name: Install pnpm
         if: steps.pm.outputs.pm == 'pnpm'
         uses: pnpm/action-setup@v4
         with:
           version: 9
+
       - name: Install (npm ci)
         if: steps.pm.outputs.pm == 'npm' && hashFiles('package-lock.json') != ''
         run: npm ci --no-audit --no-fund
+
       - name: Install (npm i)
         if: steps.pm.outputs.pm == 'npm' && hashFiles('package-lock.json') == ''
         run: npm i --no-audit --no-fund
@@ -100,14 +103,21 @@ jobs:
         env:
           BASE_PATH: ${{ steps.base.outputs.value }}
         run: |
-          PM="${{ steps.pm.outputs.pm }}"
-          if [[ "$PM" == "pnpm" ]]; then
-            pnpm run build -- --base "$BASE_PATH"
-          elif [[ "$PM" == "yarn" ]]; then
-            yarn build --base "$BASE_PATH"
-          else
-            npm run build -- --base "$BASE_PATH"
-          fi
+          set -euo pipefail
+           PM="${{ steps.pm.outputs.pm }}"
+           BASE="${{ steps.base.outputs.value }}"
+           if [[ "$BASE" != "/" ]]; then BASE_FLAG=(--base "$BASE"); else BASE_FLAG=(); fi
+           if [[ "$PM" == "pnpm" ]]; then
+             pnpm vite build "${BASE_FLAG[@]}"
+           elif [[ "$PM" == "yarn" ]]; then
+             yarn run vite build "${BASE_FLAG[@]}"
+           else
+             npx vite build "${BASE_FLAG[@]}"
+           fi
+           node scripts/generate-meta.mjs
+           if [[ -f obf.config.json ]]; then
+             npx javascript-obfuscator dist --output dist --config obf.config.json
+           fi
 
       - name: Ensure static 404
         run: |
@@ -116,6 +126,14 @@ jobs:
           fi
           if grep -E '<script[^>]+src=.*/assets/js/' dist/404.html >/dev/null 2>&1; then
             echo "dist/404.html must be static (no app bundle)"; exit 1
+          fi
+
+      - name: Sanity checks
+        run: |
+          test -f dist/index.html || (echo "dist/index.html missing" && exit 1)
+          # Tidak boleh ada referensi src/main.tsx (tanda belum terbuild)
+          if grep -E '/src/main\.(t|j)sx?' dist/index.html >/dev/null 2>&1; then
+            echo "index.html references /src/main.* — build failed"; exit 1
           fi
 
       - name: Post-build adjustments
