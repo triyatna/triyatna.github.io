@@ -62,7 +62,7 @@
   },
   "about": {
     "enabled": true,
-    "markdown": "Hello! I'm Tri Yatna, a passionate web developer from Indonesia &#x1F1EE;&#x1F1E9;.\nI have experience as a website developer and cloud engineer, specializing in building fast, scalable, and secure web applications.\n\nI enjoy working with PHP (Laravel), Node.js, and modern front-end tools like React and TailwindCSS.\nIn the cloud world, I love optimizing servers with Caddy, Docker, and Cloudflare — making deployments smooth and reliable.\n\nBeyond code, I’m obsessed with automation, AI integration, and crafting systems that make life easier for both developers and users.\n\nWhen I’m not coding, you’ll find me experimenting with new tech stacks, tuning performance, or helping others bring their ideas online."
+    "markdown": "Hello! I'm Tri Yatna, a passionate web developer from Indonesia.\nI have experience as a website developer and cloud engineer, specializing in building fast, scalable, and secure web applications.\n\nI enjoy working with PHP (Laravel), Node.js, and modern front-end tools like React and TailwindCSS.\nIn the cloud world, I love optimizing servers with Caddy, Docker, and Cloudflare — making deployments smooth and reliable.\n\nBeyond code, I’m obsessed with automation, AI integration, and crafting systems that make life easier for both developers and users.\n\nWhen I’m not coding, you’ll find me experimenting with new tech stacks, tuning performance, or helping others bring their ideas online."
   },
 
   "resume": {
