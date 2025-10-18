@@ -315,7 +315,7 @@
     },
     "custom": [
       {
-        "icon": "./assets/images/apple-touch-icon.png",
+        "icon": "https://triyatna.is-a.dev/favicon.ico",
         "name": "Personal Portfolio",
         "description": "My personal portfolio website built with React and Tailwind CSS.",
         "link": "https://triyatna.is-a.dev"
