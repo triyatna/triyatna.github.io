@@ -6,7 +6,7 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "scripts": {
+ "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/generate-meta.mjs && javascript-obfuscator dist --output dist --config obf.config.json",
     "preview": "vite preview --port 5173",

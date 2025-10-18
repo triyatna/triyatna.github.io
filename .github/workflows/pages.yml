@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
@@ -20,12 +20,14 @@ jobs:
     defaults:
       run:
         shell: bash
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
+      # Detect package manager
       - name: Detect package manager
         id: pm
         run: |
@@ -36,8 +38,9 @@ jobs:
           else
             echo "pm=npm" >> "$GITHUB_OUTPUT"
           fi
-          echo "Detected PM: ${PM:-${{ steps.pm.outputs.pm }}}"
+          echo "Detected: ${{ steps.pm.outputs.pm }}"
 
+      # Setup Node + cache by PM
       - name: Setup Node (npm)
         if: steps.pm.outputs.pm == 'npm'
         uses: actions/setup-node@v4
@@ -59,14 +62,18 @@ jobs:
           node-version: 20
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
+
       - name: Install pnpm
         if: steps.pm.outputs.pm == 'pnpm'
         uses: pnpm/action-setup@v4
         with:
           version: 9
+
+      # Install deps
       - name: Install (npm ci)
         if: steps.pm.outputs.pm == 'npm' && hashFiles('package-lock.json') != ''
         run: npm ci --no-audit --no-fund
+
       - name: Install (npm i)
         if: steps.pm.outputs.pm == 'npm' && hashFiles('package-lock.json') == ''
         run: npm i --no-audit --no-fund
@@ -84,6 +91,7 @@ jobs:
         if: steps.pm.outputs.pm == 'pnpm'
         run: pnpm install --frozen-lockfile
 
+      # Compute BASE_PATH depending on repo name (user/organization site vs project site)
       - name: Compute BASE_PATH
         id: base
         run: |
@@ -96,27 +104,27 @@ jobs:
           fi
           echo "BASE_PATH=${{ steps.base.outputs.value }}"
 
-      # Build (env + --base) aman untuk vite.config apa pun
+      # Build: pass BASE_PATH via env only (no CLI flags),
       - name: Build
         env:
           BASE_PATH: ${{ steps.base.outputs.value }}
         run: |
           PM="${{ steps.pm.outputs.pm }}"
           if [[ "$PM" == "pnpm" ]]; then
-            pnpm run build -- --base "$BASE_PATH"
+            pnpm run build
           elif [[ "$PM" == "yarn" ]]; then
-            yarn build --base "$BASE_PATH"
+            yarn build
           else
-            npm run build -- --base "$BASE_PATH"
+            npm run build
           fi
+
+      # SPA fallback, CNAME, and optional files
       - name: Post-build adjustments
         run: |
-          # SPA fallback
+          touch dist/.nojekyll
           cp dist/index.html dist/404.html || true
-          # CNAME dari root atau public/
           if [[ -f CNAME ]]; then cp CNAME dist/CNAME; fi
           if [[ -f public/CNAME ]]; then cp public/CNAME dist/CNAME; fi
-          # Optional Netlify-style
           if [[ -f public/_headers ]]; then cp public/_headers dist/_headers; fi
           if [[ -f public/_redirects ]]; then cp public/_redirects dist/_redirects; fi
 
