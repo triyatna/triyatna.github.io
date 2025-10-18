@@ -17,39 +17,111 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      # Optional but recommended: caching relies on package-lock.json existing
-      - uses: actions/setup-node@v4
+      - name: Detect package manager
+        id: pm
+        run: |
+          if [[ -f pnpm-lock.yaml ]]; then
+            echo "pm=pnpm" >> "$GITHUB_OUTPUT"
+          elif [[ -f yarn.lock ]]; then
+            echo "pm=yarn" >> "$GITHUB_OUTPUT"
+          else
+            echo "pm=npm" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Detected PM: ${PM:-${{ steps.pm.outputs.pm }}}"
+
+      - name: Setup Node (npm)
+        if: steps.pm.outputs.pm == 'npm'
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      # If you don't have package-lock.json yet, run `npm install` locally once and commit it.
-      - run: npm ci
+      - name: Setup Node (yarn)
+        if: steps.pm.outputs.pm == 'yarn'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
 
-      # Compute BASE_PATH dynamically:
+      - name: Setup Node (pnpm) + pnpm
+        if: steps.pm.outputs.pm == 'pnpm'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install pnpm
+        if: steps.pm.outputs.pm == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Install (npm ci)
+        if: steps.pm.outputs.pm == 'npm' && hashFiles('package-lock.json') != ''
+        run: npm ci --no-audit --no-fund
+      - name: Install (npm i)
+        if: steps.pm.outputs.pm == 'npm' && hashFiles('package-lock.json') == ''
+        run: npm i --no-audit --no-fund
+
+      - name: Install (yarn)
+        if: steps.pm.outputs.pm == 'yarn'
+        run: |
+          if [[ -f yarn.lock ]]; then
+            yarn install --frozen-lockfile
+          else
+            yarn install
+          fi
+
+      - name: Install (pnpm)
+        if: steps.pm.outputs.pm == 'pnpm'
+        run: pnpm install --frozen-lockfile
+
       - name: Compute BASE_PATH
+        id: base
         run: |
           REPO="${{ github.event.repository.name }}"
           OWNER="${{ github.repository_owner }}"
-          if [ "$REPO" = "$OWNER.github.io" ]; then
-            echo "BASE_PATH=/" >> $GITHUB_ENV
+          if [[ "$REPO" == "$OWNER.github.io" ]]; then
+            echo "value=/" >> "$GITHUB_OUTPUT"
           else
-            echo "BASE_PATH=/$REPO/" >> $GITHUB_ENV
+            echo "value=/$REPO/" >> "$GITHUB_OUTPUT"
           fi
-          echo "Using BASE_PATH=$BASE_PATH"
+          echo "BASE_PATH=${{ steps.base.outputs.value }}"
 
-      # Build:
-      # If your vite.config reads process.env.BASE_PATH, this env is enough.
-      # If you instead pass --base via CLI, do: npm run build -- --base "$BASE_PATH"
+      # Build (env + --base) aman untuk vite.config apa pun
       - name: Build
-        run: npm run build
         env:
-          BASE_PATH: ${{ env.BASE_PATH }}
+          BASE_PATH: ${{ steps.base.outputs.value }}
+        run: |
+          PM="${{ steps.pm.outputs.pm }}"
+          if [[ "$PM" == "pnpm" ]]; then
+            pnpm run build -- --base "$BASE_PATH"
+          elif [[ "$PM" == "yarn" ]]; then
+            yarn build --base "$BASE_PATH"
+          else
+            npm run build -- --base "$BASE_PATH"
+          fi
+      - name: Post-build adjustments
+        run: |
+          # SPA fallback
+          cp dist/index.html dist/404.html || true
+          # CNAME dari root atau public/
+          if [[ -f CNAME ]]; then cp CNAME dist/CNAME; fi
+          if [[ -f public/CNAME ]]; then cp public/CNAME dist/CNAME; fi
+          # Optional Netlify-style
+          if [[ -f public/_headers ]]; then cp public/_headers dist/_headers; fi
+          if [[ -f public/_redirects ]]; then cp public/_redirects dist/_redirects; fi
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 

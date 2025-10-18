@@ -425,7 +425,7 @@
       "icon": "./assets/images/favicon.svg",
       "apple": "./assets/images/apple-touch-icon.png",
       "shortcut": "./assets/images/favicon.ico",
-      "maskIconHref": "./assets/images/safari-pinned-tab.svg",
+      "maskIconHref": "./assets/images/favicon.svg",
       "maskIconColor": "#0D1117"
     },
     "manifest": "/site.webmanifest",
