@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -19,18 +19,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Optional but recommended: caching relies on package-lock.json existing
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: 20
+          cache: npm
+
+      # If you don't have package-lock.json yet, run `npm install` locally once and commit it.
       - run: npm ci
+
+      # Compute BASE_PATH dynamically:
+      - name: Compute BASE_PATH
+        run: |
+          REPO="${{ github.event.repository.name }}"
+          OWNER="${{ github.repository_owner }}"
+          if [ "$REPO" = "$OWNER.github.io" ]; then
+            echo "BASE_PATH=/" >> $GITHUB_ENV
+          else
+            echo "BASE_PATH=/$REPO/" >> $GITHUB_ENV
+          fi
+          echo "Using BASE_PATH=$BASE_PATH"
+
+      # Build:
+      # If your vite.config reads process.env.BASE_PATH, this env is enough.
+      # If you instead pass --base via CLI, do: npm run build -- --base "$BASE_PATH"
       - name: Build
         run: npm run build
         env:
-          BASE_PATH: "/${{ github.event.repository.name }}/"
+          BASE_PATH: ${{ env.BASE_PATH }}
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: dist
 
   deploy:
     needs: build
