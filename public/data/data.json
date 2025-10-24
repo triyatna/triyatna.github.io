@@ -345,7 +345,7 @@
         "link": "https://www.npmjs.com/package/@triyatna/n8n-nodes-4discord"
       },
       {
-        "icon": "https://raw.githubusercontent.com/triyatna/warest-whatsapp-web-multi/refs/heads/assets/warest(1).png",
+        "icon": "https://raw.githubusercontent.com/triyatna/triyatna.github.io/refs/heads/assets/images/warest.png",
         "name": "WARest - Whatsapp Web Multi Sessions Unofficial REST API",
         "description": "An unofficial REST API for WhatsApp Web Multi Sessions built with TypeScript and Express.js.",
         "link": "https://github.com/triyatna/warest-whatsapp-web-multi"
