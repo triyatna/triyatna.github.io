@@ -50,7 +50,7 @@
         "whoami",
         "tri_yatna",
         "curl https://triyatna.is-a.dev > profile.txt",
-        "cat profile.txt | grep 'Web Developer' || echo \"(Sites says I’m awesome anyway)\"",
+        "cat profile.txt | grep 'Web Developer' || echo \"('Tri Yatna)\"",
         "echo \"Portfolio loaded. Ready to explore?\""
       ],
       "typeSpeedMs": 140,
