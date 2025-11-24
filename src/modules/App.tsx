@@ -98,20 +98,21 @@ export default function App() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const sections = navItems
-      .map((n) => document.getElementById(n.id))
-      .filter((el): el is HTMLElement => Boolean(el));
-    if (!sections.length) return;
 
-    const sortedSections = [...sections].sort(
-      (a, b) => a.offsetTop - b.offsetTop || a.id.localeCompare(b.id)
-    );
+    const getSections = () =>
+      navItems
+        .map((n) => document.getElementById(n.id))
+        .filter((el): el is HTMLElement => Boolean(el))
+        .sort((a, b) => a.offsetTop - b.offsetTop || a.id.localeCompare(b.id));
 
-    const computeCurrent = () => {
-      const scrollPos = window.scrollY + window.innerHeight * 0.35;
-      let currentId = sortedSections[0]?.id || "hero";
-      for (const section of sortedSections) {
-        if (section.offsetTop <= scrollPos) {
+    const pickCurrent = () => {
+      const sections = getSections();
+      if (!sections.length) return activeRef.current;
+
+      const pivot = window.scrollY + window.innerHeight * 0.35;
+      let currentId = sections[0].id;
+      for (const section of sections) {
+        if (section.offsetTop <= pivot) {
           currentId = section.id;
         } else {
           break;
@@ -121,8 +122,8 @@ export default function App() {
     };
 
     const update = () => {
-      const nextId = computeCurrent();
-      if (nextId !== activeRef.current) setActive(nextId);
+      const next = pickCurrent();
+      if (next && next !== activeRef.current) setActive(next);
     };
 
     let frame: number | null = null;
@@ -134,16 +135,18 @@ export default function App() {
       });
     };
 
-    const resizeObserver = new ResizeObserver(() => update());
-    sortedSections.forEach((section) => resizeObserver.observe(section));
-
+    const mutationObserver = new MutationObserver(() => update());
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", update);
+
     update();
 
     return () => {
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", update);
       if (frame != null) window.cancelAnimationFrame(frame);
-      resizeObserver.disconnect();
+      mutationObserver.disconnect();
     };
   }, [navItems]);
 
