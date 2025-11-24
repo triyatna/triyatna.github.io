@@ -1,4 +1,4 @@
-import React, { Suspense, useRef } from "react";
+import React, { Suspense, useEffect, useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useMotionTemplate } from "framer-motion";
 import type { SiteData } from "../hooks/useAppData";
 import { TerminalTyper } from "../components/TerminalTyper";

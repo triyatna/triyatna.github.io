@@ -9,7 +9,7 @@ export const ThemeToggle: React.FC = () => {
   return (
     <button
       type="button"
-      aria-pressed={theme === "dark"}
+      aria-pressed={theme === "dark" ? "true" : "false"}
       aria-label={`Switch to ${to} mode`}
       title={`Switch to ${to} mode`}
       onClick={toggle}
