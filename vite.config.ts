@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, ".", "");
   const raw = env.BASE_PATH ?? (globalThis as any)?.process?.env?.BASE_PATH ?? "/";
+  const isProd = mode === "production";
 
   const base = (() => {
     let b = String(raw || "/").trim();
@@ -17,7 +18,17 @@ export default defineConfig(({ mode }) => {
     base,
     plugins: [react(), tailwindcss()],
     build: {
-      sourcemap: true,
+      sourcemap: !isProd,
+      minify: isProd ? "terser" : "esbuild",
+      terserOptions: isProd
+        ? {
+            compress: {
+              drop_console: true,
+              drop_debugger: true,
+            },
+            format: { comments: false },
+          }
+        : undefined,
       outDir: "dist",
       assetsDir: "assets",
       chunkSizeWarningLimit: 1000,

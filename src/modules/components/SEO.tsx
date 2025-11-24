@@ -334,8 +334,7 @@ export const SEO: React.FC<{ data: SiteData }> = ({ data }) => {
     });
 
     (s.fontStylesheets || []).filter(Boolean).forEach((href) => {
-      ensureLinkMulti("preload", href, { as: "style" });
-      ensureLinkMulti("stylesheet", href);
+      ensureLinkMulti("stylesheet", href, { crossorigin: "anonymous" });
     });
 
     // ---- JSON-LD Person

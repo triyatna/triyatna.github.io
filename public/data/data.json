@@ -353,7 +353,7 @@
     ]
   },
   "portfolio": {
-    "enabled": true,
+    "enabled": false,
     "data": [
       {
         "icon": "https://upload.wikimedia.org/wikipedia/commons/3/33/Vanamo_Logo.png",

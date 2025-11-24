@@ -1,16 +1,20 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export type ContactConfig = {
   enabled: boolean;
-  form: { mode: "mailto" | "formspree" | "disabled"; to?: string; formspreeId?: string };
+  form: {
+    mode: "mailto" | "formspree" | "disabled";
+    to?: string;
+    formspreeId?: string;
+  };
   contact_me?: { address?: string; email?: string; website?: string };
 };
 
-export const Contact: React.FC<{ config: ContactConfig; displayName?: string }> = ({
-  config,
-  displayName,
-}) => {
+export const Contact: React.FC<{
+  config: ContactConfig;
+  displayName?: string;
+}> = ({ config, displayName }) => {
   const [status, setStatus] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [execOut, setExecOut] = useState<string | null>(null);
@@ -21,103 +25,86 @@ export const Contact: React.FC<{ config: ContactConfig; displayName?: string }> 
   const website = (config.contact_me?.website ?? "").trim();
 
   const esc = (v?: string) =>
-    (v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    (v ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
 
-  const highlightPy = (code: string) => {
+  const highlightGo = (code: string) => {
     let s = esc(code);
-    s = s.replace(/f?("([^"\\]|\\.)*"|'([^'\\]|\\.)*')/g, '<span class="tok-string">$1</span>');
     s = s.replace(/(#.*)$/gm, '<span class="tok-comment">$1</span>');
+    s = s.replace(/(\/\/.*)$/gm, '<span class="tok-comment">$1</span>');
+    s = s.replace(
+      /(["'`])(?:(?=(\\?))\2.)*?\1/g,
+      '<span class="tok-string">$&</span>'
+    );
     const kw = [
-      "from",
+      "package",
       "import",
-      "def",
-      "class",
+      "func",
+      "var",
+      "const",
+      "type",
+      "struct",
       "return",
-      "None",
-      "True",
-      "False",
       "if",
       "else",
-      "elif",
       "for",
-      "while",
-      "in",
-      "with",
-      "pass",
+      "range",
+      "go",
+      "defer",
+      "main",
     ];
-    s = s.replace(new RegExp(`\\b(${kw.join("|")})\\b`, "g"), '<span class="tok-kw">$1</span>');
-    s = s.replace(/\b([A-Z][A-Za-z0-9_]*)\b/g, '<span class="tok-type">$1</span>');
-    s = s.replace(/\b(print)\b/g, '<span class="tok-fn">$1</span>');
+    s = s.replace(
+      new RegExp(`\\b(${kw.join("|")})\\b`, "g"),
+      '<span class="tok-kw">$1</span>'
+    );
     return s;
   };
 
-  const pyCode = useMemo(() => {
+  const goCode = useMemo(() => {
     const n = name.replace(/"/g, '\\"');
     const e = email.replace(/"/g, '\\"');
     const w = website.replace(/"/g, '\\"');
     return [
-      "import sys",
+      "package main",
       "",
-      "def hello(n, e=None, w=None):",
-      '    msg = f"Hello! my name {n}"',
-      "    tail = []",
-      '    if e: tail.append(f"reach me at {e}")',
-      '    if w: tail.append(f"or {w}")',
-      '    return msg + (", " + " ".join(tail) if tail else "")',
+      'import "fmt"',
       "",
-      `print(hello("${n}", "${e}", "${w}"))`,
+      "func main() {",
+      "    contact := map[string]string{",
+      `      "Name": "${n}",`,
+      `      "Email": "${e}",`,
+      `      "Website": "${w}",`,
+      "    }",
+      "",
+      '    fmt.Println("// My Contact")',
+      "    for key, value := range contact {",
+      '       if value == "" {',
+      '           value = "not provided"',
+      "       }",
+      '       fmt.Printf("%-7s : %s\\n", key, value)',
+      "    }",
+      "}",
     ].join("\n");
+  }, [name, email, website]);
+  const goOutput = useMemo(() => {
+    const safe = (v: string) => v || "not provided";
+    const entries = [
+      `Name : ${safe(name)}`,
+      `Email : ${safe(email)}`,
+      `Website : ${safe(website)}`,
+    ];
+    return ["// My Contact", ...entries].join("\n");
   }, [name, email, website]);
 
   const onExecute = () => {
-    let msg = `Hello! my name ${name}`;
-    const tail: string[] = [];
-    if (email) tail.push(`reach me at ${email}`);
-    if (website) tail.push(`or ${website}`);
-    if (tail.length) msg += `, ${tail.join(" ")}`;
-    setExecOut(msg);
+    setExecOut(goOutput);
     window.clearTimeout((onExecute as any)._t);
     (onExecute as any)._t = window.setTimeout(() => setExecOut(null), 60000);
   };
-
-  const codePaneRef = useRef<HTMLDivElement | null>(null);
-  const cardRef = useRef<HTMLDivElement | null>(null); // ← kontainer constraints
-  const rowRefs = useRef<HTMLDivElement[]>([]);
-  const lines = useMemo(() => pyCode.split("\n"), [pyCode]);
-  const [wrapCounts, setWrapCounts] = useState<number[]>([]);
-
-  useEffect(() => {
-    const el = codePaneRef.current;
-    if (!el) return;
-    const measure = () => {
-      const lh = 24;
-      const counts = rowRefs.current.map((r) => {
-        if (!r) return 1;
-        const h = r.getBoundingClientRect().height;
-        return Math.max(1, Math.ceil(h / lh));
-      });
-      setWrapCounts(counts);
-    };
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    rowRefs.current.forEach((r) => r && ro.observe(r));
-    measure();
-    document.fonts?.ready?.then(measure).catch(() => {});
-    window.addEventListener("resize", measure);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measure);
-    };
-  }, [lines]);
-
-  const visualNumbers = useMemo(() => {
-    const nums: number[] = [];
-    for (let i = 0; i < lines.length; i++) {
-      const times = wrapCounts[i] ?? 1;
-      for (let k = 0; k < times; k++) nums.push(i + 1);
-    }
-    return nums;
-  }, [lines, wrapCounts]);
+  const cardRef = useRef<HTMLDivElement | null>(null); // container constraints
+  const lines = useMemo(() => goCode.split("\n"), [goCode]);
 
   const mailtoHref = (subject: string, body: string) => {
     const to = config.form.to || "";
@@ -180,7 +167,7 @@ export const Contact: React.FC<{ config: ContactConfig; displayName?: string }> 
           <span className="h-3 w-3 rounded-full bg-red-500/80" />
           <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
           <span className="h-3 w-3 rounded-full bg-green-500/80" />
-          <span className="ml-3 text-xs text-muted">contact.py</span>
+          <span className="ml-3 text-xs text-muted">contact.go</span>
           <div className="ml-auto">
             <button
               type="button"
@@ -194,30 +181,19 @@ export const Contact: React.FC<{ config: ContactConfig; displayName?: string }> 
           </div>
         </div>
 
-        <div
-          ref={codePaneRef}
-          className="code-pane grid grid-cols-[auto_1fr] gap-x-3 px-4 py-4 font-mono text-sm leading-[24px]"
-        >
-          <ol className="select-none text-right text-xs text-muted pr-2 leading-[24px]">
-            {visualNumbers.map((n, i) => (
-              <li key={i} className="tabular-nums">
-                {n}
-              </li>
-            ))}
-          </ol>
-          <div className="space-y-0">
-            {lines.map((ln, i) => (
-              <div
-                key={i}
-                ref={(el) => {
-                  if (el) rowRefs.current[i] = el;
-                }}
-                className="ow-anywhere whitespace-pre-wrap break-words"
-              >
-                <code dangerouslySetInnerHTML={{ __html: highlightPy(ln || " ") }} />
+        <div className="code-pane px-4 py-4 font-mono text-sm leading-[24px] space-y-0">
+          {lines.map((ln, i) => (
+            <div key={i} className="grid grid-cols-[auto_1fr] gap-x-3">
+              <div className="select-none text-right text-xs text-muted pr-2 leading-[24px] tabular-nums">
+                {i + 1}
               </div>
-            ))}
-          </div>
+              <div className="ow-anywhere whitespace-pre-wrap break-words leading-[24px]">
+                <code
+                  dangerouslySetInnerHTML={{ __html: highlightGo(ln || " ") }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
 
         <AnimatePresence>
@@ -239,8 +215,12 @@ export const Contact: React.FC<{ config: ContactConfig; displayName?: string }> 
               <div className="flex items-start gap-2">
                 <span className="mt-0.5 inline-block h-2 w-2 rounded-full bg-[color:var(--accent)]" />
                 <div className="min-w-0 break-words">
-                  <strong className="block text-[color:var(--text)]">Output</strong>
-                  <span className="text-muted">{execOut}</span>
+                  <strong className="block text-[color:var(--text)]">
+                    Output
+                  </strong>
+                  <span className="text-muted whitespace-pre-wrap">
+                    {execOut}
+                  </span>
                 </div>
                 <button
                   onClick={() => setExecOut(null)}
@@ -299,7 +279,7 @@ export const Contact: React.FC<{ config: ContactConfig; displayName?: string }> 
           <textarea
             required
             name="message"
-            rows={5}
+            rows={11}
             className="mt-1 w-full rounded-lg border border-subtle bg-[color:var(--bg)]/60 px-3 py-2 focus-ring"
             placeholder="Tell me a bit about your project…"
           />
@@ -358,13 +338,17 @@ export const Contact: React.FC<{ config: ContactConfig; displayName?: string }> 
       </form>
 
       <style>{`
-        .tok-kw{color:#c678dd}.tok-string{color:#98c379}.tok-type{color:#e5c07b}.tok-fn{color:#61afef}.tok-comment{color:#7f848e}
+        .tok-kw{color:#61afef}
+        .tok-string{color:#98c379}
+        .tok-comment{color:#7f848e}
         :root:not(.dark)[data-theme="light"] .tok-comment{color:#6b7280}
-        :root:not(.dark)[data-theme="light"] .tok-kw{color:#a626a4}
+        :root:not(.dark)[data-theme="light"] .tok-kw{color:#005cc5}
         :root:not(.dark)[data-theme="light"] .tok-string{color:#22863a}
-        :root:not(.dark)[data-theme="light"] .tok-type{color:#b08800}
-        :root:not(.dark)[data-theme="light"] .tok-fn{color:#005cc5}
         .code-pane code,.code-pane div{white-space:pre-wrap;word-break:break-word}.ow-anywhere{overflow-wrap:anywhere}
+        @media (max-width: 640px) {
+          .code-pane { font-size: 0.85rem; line-height: 1.4; }
+          .code-pane .tabular-nums { font-size: 0.7rem; }
+        }
         .btn-rot{background:conic-gradient(from 0deg,color-mix(in oklch,var(--accent) 80%,transparent),transparent 20% 60%,color-mix(in oklch,var(--accent) 80%,transparent));filter:blur(8px);opacity:.65;animation:rot 3.5s linear infinite}
         @keyframes rot{to{transform:rotate(360deg)}}
         .contact-btn{background:var(--accent);color:#fff;

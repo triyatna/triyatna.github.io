@@ -1,5 +1,11 @@
 import React, { Suspense, useEffect, useRef } from "react";
-import { motion, useMotionValue, useSpring, useTransform, useMotionTemplate } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useMotionTemplate,
+} from "framer-motion";
 import type { SiteData } from "../hooks/useAppData";
 import { TerminalTyper } from "../components/TerminalTyper";
 
@@ -11,7 +17,8 @@ export const Hero: React.FC<{ data: SiteData }> = ({ data }) => {
 
   const name = p.name?.trim() || "Your Name";
   const tagline = p.tagline?.trim() || "Web Developer";
-  const avatarUrl = p.avatarUrl?.trim() || "./assets/images/apple-touch-icon.png";
+  const avatarUrl =
+    p.avatarUrl?.trim() || "./assets/images/apple-touch-icon.png";
   const cvUrl = p.cvUrl?.trim() || null;
 
   const lines =
@@ -35,8 +42,14 @@ export const Hero: React.FC<{ data: SiteData }> = ({ data }) => {
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
-  const rX = useSpring(useTransform(my, [-50, 50], [10, -10]), { stiffness: 140, damping: 15 });
-  const rY = useSpring(useTransform(mx, [-50, 50], [-10, 10]), { stiffness: 140, damping: 15 });
+  const rX = useSpring(useTransform(my, [-50, 50], [10, -10]), {
+    stiffness: 140,
+    damping: 15,
+  });
+  const rY = useSpring(useTransform(mx, [-50, 50], [-10, 10]), {
+    stiffness: 140,
+    damping: 15,
+  });
   const scale = useSpring(1, { stiffness: 180, damping: 18 });
   const shadow = useMotionTemplate`
     0px 25px 60px rgba(0,0,0,0.35),
@@ -134,7 +147,9 @@ export const Hero: React.FC<{ data: SiteData }> = ({ data }) => {
             <div className="absolute inset-0 rounded-3xl p-[2px]">
               <div
                 className="absolute inset-0 rounded-3xl opacity-70"
-                style={{ backgroundImage: "linear-gradient(135deg, #1F6FEB, #2D9CDB)" }}
+                style={{
+                  backgroundImage: "linear-gradient(135deg, #1F6FEB, #2D9CDB)",
+                }}
               />
               <div className="absolute inset-[2px] rounded-[1.35rem] bg-[color:var(--surface)] border border-subtle" />
             </div>
@@ -161,7 +176,6 @@ export const Hero: React.FC<{ data: SiteData }> = ({ data }) => {
               decoding="async"
               width={224}
               height={224}
-              fetchPriority="high"
             />
 
             <div
@@ -191,7 +205,9 @@ export const Hero: React.FC<{ data: SiteData }> = ({ data }) => {
             <span aria-hidden className="hero-title-underline" />
           </h1>
 
-          <p className="hero-tagline mt-3 max-w-xl text-base md:text-lg">{tagline}</p>
+          <p className="hero-tagline mt-3 max-w-xl text-base md:text-lg">
+            {tagline}
+          </p>
 
           {cvUrl && (
             <motion.a
