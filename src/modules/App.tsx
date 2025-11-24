@@ -103,43 +103,47 @@ export default function App() {
       .filter((el): el is HTMLElement => Boolean(el));
     if (!sections.length) return;
 
-    let frame: number | null = null;
-    const evaluate = () => {
-      frame = null;
-      const viewportCenter = window.innerHeight * 0.4;
-      let covering: HTMLElement | null = null;
-      let fallbackId: string | null = null;
-      let fallbackDist = Infinity;
+    const sortedSections = [...sections].sort(
+      (a, b) => a.offsetTop - b.offsetTop || a.id.localeCompare(b.id)
+    );
 
-      sections.forEach((section) => {
-        const rect = section.getBoundingClientRect();
-        if (!covering && rect.top <= viewportCenter && rect.bottom >= viewportCenter) {
-          covering = section;
+    const computeCurrent = () => {
+      const scrollPos = window.scrollY + window.innerHeight * 0.35;
+      let currentId = sortedSections[0]?.id || "hero";
+      for (const section of sortedSections) {
+        if (section.offsetTop <= scrollPos) {
+          currentId = section.id;
+        } else {
+          break;
         }
-        const dist = Math.abs(rect.top - viewportCenter);
-        if (dist < fallbackDist) {
-          fallbackDist = dist;
-          fallbackId = section.id;
-        }
-      });
-
-      const nextId = covering?.id || fallbackId;
-      if (nextId && nextId !== activeRef.current) {
-        setActive(nextId);
       }
+      return currentId;
     };
 
+    const update = () => {
+      const nextId = computeCurrent();
+      if (nextId !== activeRef.current) setActive(nextId);
+    };
+
+    let frame: number | null = null;
     const onScroll = () => {
       if (frame != null) return;
-      frame = window.requestAnimationFrame(evaluate);
+      frame = window.requestAnimationFrame(() => {
+        frame = null;
+        update();
+      });
     };
 
+    const resizeObserver = new ResizeObserver(() => update());
+    sortedSections.forEach((section) => resizeObserver.observe(section));
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    evaluate();
+    update();
 
     return () => {
       window.removeEventListener("scroll", onScroll);
       if (frame != null) window.cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
     };
   }, [navItems]);
 
