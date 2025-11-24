@@ -1,0 +1,82 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Saira:wght@400;500;600&display=swap");
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Theme variables (light / dark) */
+:root {
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --text: #1f2328;
+  --text-muted: #3c4756; /* Darkened for better contrast */
+  --accent: #0969da;
+  --border: #d0d7de;
+  --gradient: linear-gradient(90deg, #0969da, #58a6ff);
+}
+[data-theme="dark"] {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --text: #e6edf3;
+  --text-muted: #a9b9ce; /* Lightened for better contrast */
+  --accent: #58a6ff;
+  --border: #30363d;
+  --gradient: linear-gradient(90deg, #1f6feb, #2d9cdb);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Space Grotesk", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+code,
+pre {
+  font-family: "JetBrains Mono", "Fira Code", "Space Mono", ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@layer utilities {
+  .bg-surface {
+    background-color: var(--surface);
+  }
+  .bg-surface-soft {
+    background-color: color-mix(in oklab, var(--surface) 90%, transparent);
+  }
+  .bg-surface-elev {
+    background-color: color-mix(in oklab, var(--surface) 96%, transparent);
+  }
+  .text-muted {
+    color: var(--text-muted);
+  }
+  .border-subtle {
+    border-color: var(--border);
+  }
+  .accent {
+    color: var(--accent);
+  }
+  .bg-gradient-accent {
+    background-image: var(--gradient);
+  }
+  /* .focus-ring {
+    @apply outline-none ring-2 ring-offset-2 ring-[var(--accent)] ring-offset-[var(--bg)];
+  } */
+}
+
+/* Matrix rain canvas behind content */
+#matrix-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: normal;
+}
+[data-theme="light"] #matrix-canvas {
+  opacity: 0.2;
+}
