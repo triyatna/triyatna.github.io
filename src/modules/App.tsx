@@ -58,6 +58,10 @@ export default function App() {
   const showLoader = wantsLoader && !loaderFinished;
 
   const [active, setActive] = useState<string>(() => getInitialSection());
+  const activeRef = useRef(active);
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
   const hashAppliedRef = useRef(false);
 
   const contactCfg: ContactConfig = useMemo(() => {
@@ -96,36 +100,47 @@ export default function App() {
     if (typeof window === "undefined") return;
     const sections = navItems
       .map((n) => document.getElementById(n.id))
-      .filter(Boolean) as HTMLElement[];
+      .filter((el): el is HTMLElement => Boolean(el));
     if (!sections.length) return;
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting);
-        if (!visible.length) return;
+    let frame: number | null = null;
+    const evaluate = () => {
+      frame = null;
+      const viewportCenter = window.innerHeight * 0.4;
+      let covering: HTMLElement | null = null;
+      let fallbackId: string | null = null;
+      let fallbackDist = Infinity;
 
-        const viewportCenter =
-          visible[0]?.rootBounds?.height != null
-            ? visible[0].rootBounds.height / 2
-            : typeof window !== "undefined"
-            ? window.innerHeight / 2
-            : 0;
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        if (!covering && rect.top <= viewportCenter && rect.bottom >= viewportCenter) {
+          covering = section;
+        }
+        const dist = Math.abs(rect.top - viewportCenter);
+        if (dist < fallbackDist) {
+          fallbackDist = dist;
+          fallbackId = section.id;
+        }
+      });
 
-        const focused = visible
-          .map((entry) => {
-            const rect = entry.boundingClientRect;
-            const center = rect.top + rect.height / 2;
-            return { entry, distance: Math.abs(center - viewportCenter) };
-          })
-          .sort((a, b) => a.distance - b.distance)[0]?.entry;
+      const nextId = covering?.id || fallbackId;
+      if (nextId && nextId !== activeRef.current) {
+        setActive(nextId);
+      }
+    };
 
-        if (focused?.target?.id) setActive(focused.target.id);
-      },
-      { root: null, rootMargin: "-25% 0px -25% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
+    const onScroll = () => {
+      if (frame != null) return;
+      frame = window.requestAnimationFrame(evaluate);
+    };
 
-    sections.forEach((s) => io.observe(s));
-    return () => io.disconnect();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    evaluate();
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame != null) window.cancelAnimationFrame(frame);
+    };
   }, [navItems]);
 
   useEffect(() => {
